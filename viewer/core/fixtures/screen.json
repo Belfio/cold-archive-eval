@@ -1,0 +1,46 @@
+{
+  "id": "screen-recording-2026-06-14",
+  "kind": "video",
+  "note": "",
+  "original": {
+    "path": "/Users/example/Desktop/Screen Recordings/Screen Recording 2026-06-14 at 15.06.00.mov",
+    "host": "example-host.local",
+    "bytes_on_disk": 3800970978,
+    "mtime": "2026-06-14T16:27:21"
+  },
+  "s3": {
+    "bucket": "example-cold-archive",
+    "key": "originals/2026/11/screen-recording-2026-06-14/Screen Recording 2026-06-14 at 15.06.00.mov",
+    "bytes": 3800970978,
+    "storage_class": "DEEP_ARCHIVE",
+    "region": "eu-west-2"
+  },
+  "sha256": "14c1ea7d987df6ef94752e313c1011273b1f42902db6fcb13611f62ba13a2a80",
+  "crc64nvme": "D9x8K9dsgcQ=",
+  "verification": {
+    "size_match": true,
+    "crc64nvme_match": true,
+    "server_crc64nvme": "D9x8K9dsgcQ=",
+    "local_crc64nvme": "D9x8K9dsgcQ=",
+    "storage_class": "DEEP_ARCHIVE",
+    "verified": true
+  },
+  "previews": [
+    {
+      "key": "previews/2026/11/screen-recording-2026-06-14/screen-recording-2026-06-14.preview.mp4",
+      "bytes": 105111076,
+      "content_type": "video/mp4"
+    },
+    {
+      "key": "previews/2026/11/screen-recording-2026-06-14/screen-recording-2026-06-14.poster.jpg",
+      "bytes": 19935,
+      "content_type": "image/jpeg"
+    }
+  ],
+  "preview_ratio": 0.0277,
+  "duration_s": 4874.0,
+  "uploaded_at": "2026-11-15T00:09:01+00:00",
+  "min_storage_until": "2027-05-14",
+  "est_monthly_usd": 0.0059,
+  "local_deleted": false
+}

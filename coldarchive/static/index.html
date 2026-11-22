@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>coldarchive</title>
+<meta name="coldarchive-token" content="__TOKEN__">
+<style>
+body{font:14px system-ui;margin:2rem;max-width:1100px}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:4px 8px;border-bottom:1px solid #ddd}
+button{margin-right:4px}.danger{color:#b00}#totals{margin:1rem 0;font-weight:600}#msg{color:#b00}
+</style></head><body>
+<h1>coldarchive</h1>
+<div id="msg"></div>
+<h2>Suggestions</h2>
+<button id="sug-load">Find stale big files</button> <button id="sug-go">Archive selected</button>
+<table id="sug"><thead><tr><th></th><th>Path</th><th>Size</th><th>Last modified</th></tr></thead><tbody></tbody></table>
+<div id="job"></div>
+<h2>Archive</h2>
+<div id="totals"></div>
+<table id="items"><thead><tr><th>Name</th><th>Kind</th><th>Size</th><th>Uploaded</th><th>Free to delete</th>
+<th>Est $/mo</th><th>Verified</th><th>Local deleted</th><th>Actions</th></tr></thead><tbody></tbody></table>
+<script>
+const TOKEN = document.querySelector("meta[name=coldarchive-token]").content;
+const $ = s => document.querySelector(s);
+const fmt = b => b >= 2**30 ? (b/2**30).toFixed(2)+" GiB" : (b/2**20).toFixed(1)+" MiB";
+const say = t => $("#msg").textContent = t || "";
+function cell(tr, text){ const td = document.createElement("td"); td.textContent = text; tr.appendChild(td); return td; }
+function btn(label, fn, cls){ const b = document.createElement("button"); b.textContent = label; if(cls) b.className = cls; b.onclick = fn; return b; }
+async function api(url, opts){
+  opts = opts || {}; opts.headers = Object.assign({"X-Coldarchive-Token": TOKEN}, opts.headers || {});
+  const r = await fetch(url, opts); let body = null;
+  try { body = await r.json(); } catch(e) {}
+  return {status: r.status, ok: r.ok, body};
+}
+async function load(){
+  const {body} = await api("/api/items");
+  const tb = $("#items tbody"); tb.replaceChildren();
+  for (const it of body.items){
+    const tr = document.createElement("tr");
+    cell(tr, it.name); cell(tr, it.kind); cell(tr, fmt(it.size)); cell(tr, it.uploaded_at.slice(0,10));
+    cell(tr, it.free_to_delete); cell(tr, "$"+it.est_monthly_usd.toFixed(4));
+    cell(tr, it.verified ? "✓" : ""); cell(tr, it.local_deleted ? "✓" : "");
+    const a = cell(tr, "");
+    for (let n = 0; n < it.previews; n++) a.appendChild(btn("Preview"+(it.previews>1?" "+(n+1):""), () => window.open("/api/items/"+it.id+"/preview/"+n+"?token="+encodeURIComponent(TOKEN))));
+    if (!it.local_deleted) a.appendChild(btn("Delete local", () => delLocal(it), "danger"));
+    a.appendChild(btn("Delete from cloud", () => delCloud(it), "danger"));
+    tb.appendChild(tr);
+  }
+  const t = body.totals;
+  $("#totals").textContent = `Stored ${t.stored_gb.toFixed(2)} GiB · $${t.est_monthly_usd.toFixed(4)}/mo · freed ${fmt(t.space_freed_bytes)}`;
+}
+async function delLocal(it){
+  if (!confirm(`PERMANENTLY delete "${it.name}" from this Mac?\n\nThe only remaining copy will be the Deep Archive copy in S3 (restore takes hours and costs money). This cannot be undone.`)) return;
+  const r = await api(`/api/items/${it.id}/delete-local`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({confirm:true})});
+  say(r.ok ? "" : ((r.body||{}).reason || (r.body||{}).message || (r.body||{}).detail || "failed")); load();
+}
+async function delCloud(it){
+  const dry = await api(`/api/items/${it.id}`, {method:"DELETE"});
+  const charge = dry.body && dry.body.early_delete_charge_usd;
+  if (charge === undefined) { say("could not check early-delete charge"); return; }
+  if (!confirm(`PERMANENTLY delete "${it.name}" from S3 (original, previews, manifest)?\n\nEarly-delete charge: $${charge.toFixed(4)} (free to delete ${it.free_to_delete}).\n` + (it.local_deleted ? "The local copy is already gone: this DESTROYS your only copy." : "") )) return;
+  const r = await api(`/api/items/${it.id}?confirm=true`, {method:"DELETE"});
+  say(r.ok ? "" : ((r.body||{}).message || (r.body||{}).detail || "failed")); load();
+}
+$("#sug-load").onclick = async () => {
+  const {body} = await api("/api/suggest"); const tb = $("#sug tbody"); tb.replaceChildren();
+  for (const s of body || []){
+    const tr = document.createElement("tr"); const td = cell(tr, "");
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.value = s.path; td.appendChild(cb);
+    cell(tr, s.path); cell(tr, fmt(s.bytes)); cell(tr, s.mtime); tb.appendChild(tr);
+  }
+};
+$("#sug-go").onclick = async () => {
+  const paths = [...document.querySelectorAll("#sug input:checked")].map(c => c.value);
+  if (!paths.length) return;
+  if (!confirm(`Archive ${paths.length} item(s) to S3 Deep Archive?\n\nDeep Archive has a 180-day minimum storage charge: deleting from the cloud earlier still bills the remaining days.`)) return;
+  const r = await api("/api/archive", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({paths})});
+  if (!r.ok) { say(JSON.stringify((r.body||{}).detail || "failed")); return; }
+  const poll = async () => {
+    const j = (await api("/api/jobs/"+r.body.id)).body;
+    $("#job").textContent = `Archive job: ${j.status} (${j.done}/${j.paths.length})` + (j.error ? " — "+j.error : "");
+    if (j.status === "queued" || j.status === "running") setTimeout(poll, 2000); else load();
+  };
+  poll();
+};
+load();
+</script></body></html>

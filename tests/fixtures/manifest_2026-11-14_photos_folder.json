@@ -1,0 +1,45 @@
+{
+  "id": "photos-backup-20261025-1859",
+  "kind": "folder",
+  "note": "Local snapshot of a photo project folder. Also covers 82 video files.",
+  "original": {
+    "path": "/Users/example/photos-backup/20261025-1859",
+    "host": "example-host.local",
+    "bytes_on_disk": 10575468348,
+    "mtime": "2026-10-25T20:09:00"
+  },
+  "s3": {
+    "bucket": "example-cold-archive",
+    "key": "originals/2026/11/photos-backup-20261025-1859/20261025-1859.tar",
+    "bytes": 10588856320,
+    "storage_class": "DEEP_ARCHIVE",
+    "region": "eu-west-2"
+  },
+  "sha256": "4bbe31fd94138d86d937cef9fb123ebe69bc623750a05ac44617c07a6b9c83d0",
+  "crc64nvme": "tG9EAArevEM=",
+  "verification": {
+    "size_match": true,
+    "crc64nvme_match": true,
+    "server_crc64nvme": "tG9EAArevEM=",
+    "local_crc64nvme": "tG9EAArevEM=",
+    "storage_class": "DEEP_ARCHIVE",
+    "verified": true
+  },
+  "previews": [
+    {
+      "key": "previews/2026/11/photos-backup-20261025-1859/photos-backup-20261025-1859.files.tsv.gz",
+      "bytes": 87385,
+      "content_type": "text/tab-separated-values"
+    },
+    {
+      "key": "previews/2026/11/photos-backup-20261025-1859/photos-backup-20261025-1859.thumbs.tar",
+      "bytes": 2560000,
+      "content_type": "application/x-tar"
+    }
+  ],
+  "preview_ratio": 0.0003,
+  "uploaded_at": "2026-11-15T00:19:31+00:00",
+  "min_storage_until": "2027-05-14",
+  "est_monthly_usd": 0.0098,
+  "local_deleted": false
+}

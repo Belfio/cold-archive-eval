@@ -1,0 +1,37 @@
+[project]
+name = "coldarchive"
+version = "0.1.0"
+description = "Archive files to S3 Deep Archive with small previews"
+requires-python = ">=3.13"
+dependencies = [
+    "awscrt",
+    "boto3[crt]>=1.44.3",
+    "fastapi>=0.163.0",
+    "httpx>=0.28.1",
+    "pillow>=13.0.0",
+    "pypdfium2>=5.15.2",
+    "typer>=0.29.1",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "moto>=5.2.5",
+    "pytest",
+]
+
+[project.scripts]
+coldarchive = "coldarchive.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["coldarchive"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+addopts = '-m "not live"'
+markers = ["live: hits real AWS (profile personal, prefix _test/)"]

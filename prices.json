@@ -1,0 +1,7 @@
+{
+  "region": "eu-west-2",
+  "deep_archive_gb_month": 0.0018,
+  "standard_gb_month": 0.024,
+  "fetched": "2026-11-15",
+  "source": "EUW2 IT Deep Archive Access (GDA storage SKU missing from Pricing API)"
+}
